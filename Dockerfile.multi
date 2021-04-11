@@ -14,16 +14,15 @@ RUN pip install -r requirements-test.txt
 COPY . /test-stage
 WORKDIR /test-stage
 
-RUN pytest && pylint app/*.py \
-	&& for file in $(ls app/*.py); do bandit $file; done
+RUN pytest && pylint app/*.py && bandit app/*.py
 
 FROM python:3.7-alpine AS deploy
 
 COPY --from=build /wheels /wheels
 COPY requirements.txt ./
 
-RUN pip install --no-index --find-links=/wheels -r requirements.txt \
-	&& rm -rf wheels requirements.txt
+RUN pip install --no-index --no-cache-dir --find-links=/wheels -r requirements.txt \
+	&& rm -rf /wheels requirements.txt
 
 COPY /app /app
 
